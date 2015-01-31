@@ -9,32 +9,46 @@ class RockMotive::Interaction
     def inherited(klass)
       class << klass
         def method_added(method_name)
-          return if method_name != :interact || @__chain
+          return if method_name != :interact || @__override_now
 
-          interact_method = instance_method(:interact)
-          roles = interact_method.parameters.map(&:last).map do |role|
-            role_name = role.to_s.classify
-            mod = role_name.safe_constantize || "#{role_name}Role".safe_constantize
-            mod.is_a?(Module) ? mod : nil
-          end
+          roles = roles_by_interact_method
+          return if roles.empty?
 
-          define_method(:interact_with_roles) do |*args|
-            args.zip(roles).each do |arg, role|
-              arg.extend(role) if arg && role
-            end
-
-            interact_without_roles(*args)
-
-            args.zip(roles).each do |arg, role|
-              arg.unextend(role) if arg && role
-            end
-          end
-          @__chain = true
-          alias_method_chain :interact, :roles
-          @__chain = false
-        rescue NameError
+          override_interact_method(roles)
         end
       end
+    end
+
+    private
+
+    def intaract_method
+      instance_method(:interact)
+    rescue NameError
+      nil
+    end
+
+    def roles_by_interact_method
+      return [] unless interact_method
+
+      interact_method.parameters.map(&:last).map do |role|
+        role_name = role.to_s.classify
+        mod = role_name.safe_constantize || "#{role_name}Role".safe_constantize
+        mod.is_a?(Module) ? mod : nil
+      end
+    end
+
+    def override_interact_method(roles)
+      define_method(:interact_with_roles) do |*args|
+        args.zip(roles).each { |arg, role| arg && role && arg.extend(role) }
+
+        interact_without_roles(*args)
+
+        args.zip(roles).each { |arg, role| arg && role && arg.unextend(role) }
+      end
+
+      @__override_now = true
+      alias_method_chain :interact, :roles
+      @__override_now = false
     end
   end
 
