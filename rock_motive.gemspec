@@ -24,4 +24,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'minitest-power_assert'
   s.add_development_dependency 'rubocop'
   s.add_development_dependency 'simplecov'
+  s.add_development_dependency 'codeclimate-test-reporter'
 end
