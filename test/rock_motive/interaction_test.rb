@@ -36,7 +36,7 @@ class RockMotive::InteractionTest < ActiveSupport::TestCase
 
   def interaction_class_with_override_interact
     @interaction_class_with_override_interact ||= Class.new(RockMotive::Interaction) do
-      def self.interact(*args)
+      def self.interact
         true
       end
     end
