@@ -1,6 +1,7 @@
 AllCops:
   Exclude:
     - test/dummy/db/schema.rb
+    - lib/generators/*/templates/*
   RunRailsCops: true
 
 Metrics/LineLength:
