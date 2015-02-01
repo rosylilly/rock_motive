@@ -1,3 +1,4 @@
+require 'uninclude'
 require 'rock_motive'
 
 class RockMotive::Interaction
@@ -21,7 +22,7 @@ class RockMotive::Interaction
 
     private
 
-    def intaract_method
+    def interact_method
       instance_method(:interact)
     rescue NameError
       nil
@@ -41,9 +42,11 @@ class RockMotive::Interaction
       define_method(:interact_with_roles) do |*args|
         args.zip(roles).each { |arg, role| arg && role && arg.extend(role) }
 
-        interact_without_roles(*args)
+        ret = interact_without_roles(*args)
 
         args.zip(roles).each { |arg, role| arg && role && arg.unextend(role) }
+
+        ret
       end
 
       @__override_now = true
