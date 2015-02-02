@@ -48,11 +48,13 @@ class RockMotive::InteractionTest < ActiveSupport::TestCase
     end
   end
 
+  # rubocop:disable all
   def interaction_class_with_keyword
     @interaction_class_with_keyword ||= Class.new(RockMotive::Interaction) do
-      def interact(hato, msg = '', *args, pigeon: , penguin: nil, **opt)
+      def interact(hato, msg = '', *args, pigeon:, penguin: nil, **opt)
         pigeon.chirp
       end
     end
   end
+  # rubocop:enable all
 end

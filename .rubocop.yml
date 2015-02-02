@@ -5,6 +5,9 @@ AllCops:
     - vendor/**/*
   RunRailsCops: true
 
+Metrics/MethodLength:
+  Max: 15
+
 Metrics/LineLength:
   Max: 180
 

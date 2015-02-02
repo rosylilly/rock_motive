@@ -34,7 +34,7 @@ class DealInteraction < RockMotive::Interaction
   end
 end
 
-NUM_INTERATIONS = 1000000
+NUM_INTERATIONS = 1_000_000
 
 Benchmark.bmbm do |x|
   x.report('PORO') { NUM_INTERATIONS.times { Deal.new.interact(PORO.new, PORO.new) } }

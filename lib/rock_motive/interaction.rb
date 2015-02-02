@@ -26,13 +26,9 @@ class RockMotive::Interaction
 
     def interact_method
       instance_method(:interact)
-    rescue NameError
-      nil
     end
 
     def roles_by_interact_method
-      return [] unless interact_method
-
       for_args = []
       for_keywords = {}
 
@@ -77,6 +73,8 @@ class RockMotive::Interaction
       @__override_now = false
     end
   end
+
+  private
 
   def extend_roles_for_args(args, roles)
     args.each_with_index do |arg, n|

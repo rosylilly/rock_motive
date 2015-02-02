@@ -20,7 +20,7 @@ class ProfileInteraction < RockMotive::Interaction
   end
 end
 
-NUM_ITERATION = 10000
+NUM_ITERATION = 10_000
 
 RubyProf.start
 
