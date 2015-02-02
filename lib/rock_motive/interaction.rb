@@ -88,7 +88,7 @@ class RockMotive::Interaction
     args.each_with_index do |arg, n|
       role = roles[n]
 
-      arg.extend(role) if arg && role
+      arg.unextend(role) if arg && role
     end
   end
 
