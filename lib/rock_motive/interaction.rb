@@ -53,6 +53,7 @@ class RockMotive::Interaction
       (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
     end
 
+    # rubocop:disable all
     def override_interact_method(for_args, for_keywords)
       class_eval(<<-EOM)
         def interact_with_roles(*args)
@@ -74,4 +75,5 @@ class RockMotive::Interaction
       @__override_now = false
     end
   end
+  # rubocop:enable all
 end
