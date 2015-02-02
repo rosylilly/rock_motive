@@ -1,4 +1,5 @@
 require 'benchmark'
+require 'benchmark/ips'
 require 'ruby-prof'
 require 'rock_motive/interaction'
 
@@ -34,9 +35,7 @@ class DealInteraction < RockMotive::Interaction
   end
 end
 
-NUM_INTERATIONS = 1_000_000
-
-Benchmark.bmbm do |x|
-  x.report('PORO') { NUM_INTERATIONS.times { Deal.new.interact(PORO.new, PORO.new) } }
-  x.report('RockMotive') { NUM_INTERATIONS.times { DealInteraction.new.interact(PORO.new, PORO.new) } }
+Benchmark.ips do |x|
+  x.report('PORO') { Deal.new.interact(PORO.new, PORO.new) }
+  x.report('RockMotive') { DealInteraction.new.interact(PORO.new, PORO.new) }
 end
