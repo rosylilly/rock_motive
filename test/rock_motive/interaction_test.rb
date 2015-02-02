@@ -22,6 +22,18 @@ class RockMotive::InteractionTest < ActiveSupport::TestCase
     assert { interaction_class_with_keyword.interact(bird, pigeon: bird) == 'hato!' }
   end
 
+  test '#interact with unextended' do
+    bird = Bird.new(name: 'hato')
+
+    interaction_class_with_role.interact(bird)
+
+    assert { bird.singleton_class.ancestors.exclude?(PigeonRole) }
+
+    interaction_class_with_keyword.interact(bird, pigeon: bird)
+
+    assert { bird.singleton_class.ancestors.exclude?(PigeonRole) }
+  end
+
   private
 
   def interaction_class

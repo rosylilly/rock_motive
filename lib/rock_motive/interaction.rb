@@ -15,7 +15,7 @@ class RockMotive::Interaction
           return if method_name != :interact || @__override_now
 
           for_args, for_keywords = *roles_by_interact_method
-          return if for_args.empty? && for_keywords.empty?
+          return if for_args.reject(&:nil?).empty? && for_keywords.empty?
 
           override_interact_method(for_args, for_keywords)
         end
@@ -54,57 +54,24 @@ class RockMotive::Interaction
     end
 
     def override_interact_method(for_args, for_keywords)
-      define_method(:interact_with_roles) do |*args|
-        keyword_args = for_keywords.empty? ? {} : args.last
+      class_eval(<<-EOM)
+        def interact_with_roles(*args)
+          #{for_keywords.empty? ? '' : 'kv = args.last'}
+          #{for_args.map.with_index { |role, n| !role ? '' : "args[#{n}].extend(#{role.name})" }.join('; ') }
+          #{for_keywords.map { |n, r| !r ? '' : "kv[:#{n}].extend(#{r.name})" }.join('; ') }
 
-        extend_roles_for_args(args, for_args)
-        extend_roles_for_keywords(keyword_args, for_keywords)
+          ret = interact_without_roles(*args)
 
-        ret = interact_without_roles(*args)
+          #{for_args.map.with_index { |role, n| !role ? '' : "args[#{n}].unextend(#{role.name})" }.join('; ') }
+          #{for_keywords.map { |n, r| !r ? '' : "kv[:#{n}].unextend(#{r.name})" }.join('; ') }
 
-        unextend_roles_for_args(args, for_args)
-        unextend_roles_for_keywords(keyword_args, for_keywords)
-
-        ret
-      end
+          ret
+        end
+      EOM
 
       @__override_now = true
       alias_method_chain :interact, :roles
       @__override_now = false
-    end
-  end
-
-  private
-
-  def extend_roles_for_args(args, roles)
-    args.each_with_index do |arg, n|
-      role = roles[n]
-
-      arg.extend(role) if arg && role
-    end
-  end
-
-  def unextend_roles_for_args(args, roles)
-    args.each_with_index do |arg, n|
-      role = roles[n]
-
-      arg.unextend(role) if arg && role
-    end
-  end
-
-  def extend_roles_for_keywords(args, roles)
-    args.each_pair do |key, arg|
-      role = roles[key]
-
-      arg.extend(role) if arg && role
-    end
-  end
-
-  def unextend_roles_for_keywords(args, roles)
-    args.each_pair do |key, arg|
-      role = roles[key]
-
-      arg.unextend(role) if arg && role
     end
   end
 end

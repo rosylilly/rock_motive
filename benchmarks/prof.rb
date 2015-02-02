@@ -25,11 +25,7 @@ NUM_ITERATION = 10_000
 RubyProf.start
 
 NUM_ITERATION.times do
-  foo = Foo.new
-  foo.extend(Profiler)
-  foo.baz
-  foo.unextend(Profiler)
-  foo.bar
+  ProfileInteraction.interact(Foo.new, Foo.new)
 end
 
 result = RubyProf.stop
