@@ -14,10 +14,10 @@ class RockMotive::Interaction
         def method_added(method_name)
           return if method_name != :interact || @__override_now
 
-          roles = roles_by_interact_method
-          return if roles.empty?
+          for_args, for_keywords = *roles_by_interact_method
+          return if for_args.empty? && for_keywords.empty?
 
-          override_interact_method(roles)
+          override_interact_method(for_args, for_keywords)
         end
       end
     end
@@ -33,9 +33,20 @@ class RockMotive::Interaction
     def roles_by_interact_method
       return [] unless interact_method
 
-      interact_method.parameters.map do |param|
-        get_role_by_name(param.last)
+      for_args = []
+      for_keywords = {}
+
+      interact_method.parameters.each do |param|
+        type, name = *param
+        case type
+        when :req, :opt
+          for_args << get_role_by_name(name)
+        when :keyreq, :key
+          for_keywords[name] = get_role_by_name(name)
+        end
       end
+
+      [for_args, for_keywords]
     end
 
     def get_role_by_name(name)
@@ -46,13 +57,17 @@ class RockMotive::Interaction
       (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
     end
 
-    def override_interact_method(roles)
+    def override_interact_method(for_args, for_keywords)
       define_method(:interact_with_roles) do |*args|
-        args.each_with_index { |arg, n| role = roles[n]; arg && role && arg.extend(role) }
+        keyword_args = for_keywords.empty? ? {} : args.last
+
+        extend_roles_for_args(args, for_args)
+        extend_roles_for_keywords(keyword_args, for_keywords)
 
         ret = interact_without_roles(*args)
 
-        args.each_with_index { |arg, n| role = roles[n]; arg && role && arg.unextend(role) }
+        unextend_roles_for_args(args, for_args)
+        unextend_roles_for_keywords(keyword_args, for_keywords)
 
         ret
       end
@@ -60,6 +75,38 @@ class RockMotive::Interaction
       @__override_now = true
       alias_method_chain :interact, :roles
       @__override_now = false
+    end
+  end
+
+  def extend_roles_for_args(args, roles)
+    args.each_with_index do |arg, n|
+      role = roles[n]
+
+      arg.extend(role) if arg && role
+    end
+  end
+
+  def unextend_roles_for_args(args, roles)
+    args.each_with_index do |arg, n|
+      role = roles[n]
+
+      arg.extend(role) if arg && role
+    end
+  end
+
+  def extend_roles_for_keywords(args, roles)
+    args.each_pair do |key, arg|
+      role = roles[key]
+
+      arg.extend(role) if arg && role
+    end
+  end
+
+  def unextend_roles_for_keywords(args, roles)
+    args.each_pair do |key, arg|
+      role = roles[key]
+
+      arg.unextend(role) if arg && role
     end
   end
 end

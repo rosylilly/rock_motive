@@ -16,6 +16,12 @@ class RockMotive::InteractionTest < ActiveSupport::TestCase
     assert { interaction_class_with_role.interact(bird) == 'hato!' }
   end
 
+  test '#interact with keyword argument' do
+    bird = Bird.new(name: 'hato')
+
+    assert { interaction_class_with_keyword.interact(bird, pigeon: bird) == 'hato!' }
+  end
+
   private
 
   def interaction_class
@@ -38,6 +44,14 @@ class RockMotive::InteractionTest < ActiveSupport::TestCase
     @interaction_class_with_override_interact ||= Class.new(RockMotive::Interaction) do
       def self.interact
         true
+      end
+    end
+  end
+
+  def interaction_class_with_keyword
+    @interaction_class_with_keyword ||= Class.new(RockMotive::Interaction) do
+      def interact(hato, msg = '', *args, pigeon: , penguin: nil, **opt)
+        pigeon.chirp
       end
     end
   end
