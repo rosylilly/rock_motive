@@ -1,10 +1,12 @@
 require 'uninclude'
+require 'active_support/inflector'
+require 'active_support/core_ext/module/aliasing'
 require 'rock_motive'
 
 class RockMotive::Interaction
   class << self
     def interact(*args)
-      new(*args).interact(*args)
+      new.interact(*args)
     end
 
     def inherited(klass)
@@ -31,20 +33,26 @@ class RockMotive::Interaction
     def roles_by_interact_method
       return [] unless interact_method
 
-      interact_method.parameters.map(&:last).map do |role|
-        role_name = role.to_s.classify
-        mod = role_name.safe_constantize || "#{role_name}Role".safe_constantize
-        mod.is_a?(Module) ? mod : nil
+      interact_method.parameters.map do |param|
+        get_role_by_name(param.last)
       end
+    end
+
+    def get_role_by_name(name)
+      role_name = name.to_s.classify
+
+      const = role_name.safe_constantize || "#{role_name}Role".safe_constantize
+
+      const.is_a?(Module) ? const : nil
     end
 
     def override_interact_method(roles)
       define_method(:interact_with_roles) do |*args|
-        args.zip(roles).each { |arg, role| arg && role && arg.extend(role) }
+        args.each_with_index { |arg, n| role = roles[n]; arg && role && arg.extend(role) }
 
         ret = interact_without_roles(*args)
 
-        args.zip(roles).each { |arg, role| arg && role && arg.unextend(role) }
+        args.each_with_index { |arg, n| role = roles[n]; arg && role && arg.unextend(role) }
 
         ret
       end
@@ -53,8 +61,5 @@ class RockMotive::Interaction
       alias_method_chain :interact, :roles
       @__override_now = false
     end
-  end
-
-  def initialize(*)
   end
 end
