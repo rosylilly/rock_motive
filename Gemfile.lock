@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rock_motive (0.0.1)
-      rails (~> 4.2.0)
+      activesupport (>= 4.0.0)
       uninclude
 
 GEM
@@ -141,6 +141,7 @@ DEPENDENCIES
   benchmark-ips
   codeclimate-test-reporter
   minitest-power_assert
+  rails (~> 4.2.0)
   rock_motive!
   rubocop
   ruby-prof
