@@ -43,7 +43,7 @@ class RockMotive::Interaction
 
       const = role_name.safe_constantize || "#{role_name}Role".safe_constantize
 
-      const.is_a?(Module) ? const : nil
+      (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
     end
 
     def override_interact_method(roles)

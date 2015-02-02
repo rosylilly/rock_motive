@@ -33,4 +33,22 @@ end
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
+namespace :bench do
+  desc 'Run all benchmarks'
+  task :all do
+    Dir['./benchmarks/*.rb'].each do |file|
+      ruby file
+    end
+  end
+
+  Dir['./benchmarks/*.rb'].each do |bench|
+    name = File.basename(bench, '.rb')
+
+    desc "Run #{bench}"
+    task name do
+      ruby bench
+    end
+  end
+end
+
 task default: %i(rubocop app:db:drop app:db:migrate test)
