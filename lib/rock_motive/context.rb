@@ -3,36 +3,36 @@ require 'active_support/inflector'
 require 'active_support/core_ext/module/aliasing'
 require 'rock_motive'
 
-class RockMotive::Interaction
+class RockMotive::Context
   class << self
-    def interact(*args)
-      new.interact(*args)
+    def execute(*args)
+      new.execute(*args)
     end
 
     def inherited(klass)
       class << klass
         def method_added(method_name)
-          return if method_name != :interact || @__override_now
+          return if method_name != :execute || @__override_now
 
-          for_args, for_keywords = *roles_by_interact_method
+          for_args, for_keywords = *roles_by_execute_method
           return if for_args.reject(&:nil?).empty? && for_keywords.empty?
 
-          override_interact_method(for_args, for_keywords)
+          override_execute_method(for_args, for_keywords)
         end
       end
     end
 
     private
 
-    def interact_method
-      instance_method(:interact)
+    def execute_method
+      instance_method(:execute)
     end
 
-    def roles_by_interact_method
+    def roles_by_execute_method
       for_args = []
       for_keywords = {}
 
-      interact_method.parameters.each do |param|
+      execute_method.parameters.each do |param|
         type, name = *param
         case type
         when :req, :opt
@@ -54,14 +54,14 @@ class RockMotive::Interaction
     end
 
     # rubocop:disable all
-    def override_interact_method(for_args, for_keywords)
+    def override_execute_method(for_args, for_keywords)
       class_eval(<<-EOM)
-        def interact_with_roles(*args)
+        def execute_with_roles(*args)
           #{for_keywords.empty? ? '' : 'kv = args.last'}
           #{for_args.map.with_index { |role, n| !role ? '' : "args[#{n}].extend(#{role.name})" }.join('; ') }
           #{for_keywords.map { |n, r| !r ? '' : "kv[:#{n}].extend(#{r.name})" }.join('; ') }
 
-          ret = interact_without_roles(*args)
+          ret = execute_without_roles(*args)
 
           #{for_args.map.with_index { |role, n| !role ? '' : "args[#{n}].unextend(#{role.name})" }.join('; ') }
           #{for_keywords.map { |n, r| !r ? '' : "kv[:#{n}].unextend(#{r.name})" }.join('; ') }
@@ -71,7 +71,7 @@ class RockMotive::Interaction
       EOM
 
       @__override_now = true
-      alias_method_chain :interact, :roles
+      alias_method_chain :execute, :roles
       @__override_now = false
     end
   end

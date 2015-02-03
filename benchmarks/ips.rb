@@ -1,7 +1,7 @@
 require 'benchmark'
 require 'benchmark/ips'
 require 'ruby-prof'
-require 'rock_motive/interaction'
+require 'rock_motive/context'
 require 'delegate'
 
 class PORO
@@ -35,28 +35,28 @@ class SellerDelegator < SimpleDelegator
 end
 
 class Deal
-  def interact(shopper, seller)
+  def execute(shopper, seller)
     shopper.say
     seller.say
   end
 end
 
 class DealDelegator
-  def interact(shopper, seller)
+  def execute(shopper, seller)
     ShopperDelegator.new(shopper).say
     SellerDelegator.new(seller).say
   end
 end
 
-class DealInteraction < RockMotive::Interaction
-  def interact(shopper, seller)
+class DealContext < RockMotive::Context
+  def execute(shopper, seller)
     shopper.say
     seller.say
   end
 end
 
 Benchmark.ips do |x|
-  x.report('PORO') { Deal.new.interact(PORO.new, PORO.new) }
-  x.report('Delegator') { DealDelegator.new.interact(PORO.new, PORO.new) }
-  x.report('RockMotive') { DealInteraction.new.interact(PORO.new, PORO.new) }
+  x.report('PORO') { Deal.new.execute(PORO.new, PORO.new) }
+  x.report('Delegator') { DealDelegator.new.execute(PORO.new, PORO.new) }
+  x.report('RockMotive') { DealContext.new.execute(PORO.new, PORO.new) }
 end

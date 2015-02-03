@@ -1,5 +1,5 @@
 require 'ruby-prof'
-require 'rock_motive/interaction'
+require 'rock_motive/context'
 
 module Profiler
   def baz
@@ -13,8 +13,8 @@ class Foo
   end
 end
 
-class ProfileInteraction < RockMotive::Interaction
-  def interact(profiler, foo)
+class ProfileContext < RockMotive::Context
+  def execute(profiler, foo)
     profiler.baz
     foo.bar
   end
@@ -25,7 +25,7 @@ NUM_ITERATION = 10_000
 RubyProf.start
 
 NUM_ITERATION.times do
-  ProfileInteraction.interact(Foo.new, Foo.new)
+  ProfileContext.execute(Foo.new, Foo.new)
 end
 
 result = RubyProf.stop
