@@ -1,5 +1,6 @@
 # RockMotive
 
+[![Gem Version](https://badge.fury.io/rb/rock_motive.svg)](http://badge.fury.io/rb/rock_motive)
 [![Build Status](https://travis-ci.org/rosylilly/rock_motive.svg?branch=master)](https://travis-ci.org/rosylilly/rock_motive)
 [![Test Coverage](https://codeclimate.com/github/rosylilly/rock_motive/badges/coverage.svg)](https://codeclimate.com/github/rosylilly/rock_motive)
 [![Code Climate](https://codeclimate.com/github/rosylilly/rock_motive/badges/gpa.svg)](https://codeclimate.com/github/rosylilly/rock_motive)
