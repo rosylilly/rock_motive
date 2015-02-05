@@ -18,6 +18,10 @@ class RockMotive::Context
       return if for_args.reject(&:nil?).empty? && for_keywords.values.reject(&:nil?).empty?
 
       override_execute_method(for_args, for_keywords)
+
+      @__override_now = true
+      alias_method_chain :execute, :roles
+      @__override_now = false
     end
 
     def execute_method
@@ -49,27 +53,42 @@ class RockMotive::Context
       (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
     end
 
-    # rubocop:disable all
     def override_execute_method(for_args, for_keywords)
-      class_eval(<<-EOM)
-        def execute_with_roles(*args)
-          #{for_keywords.empty? ? '' : 'kv = args.last'}
-          #{for_args.map.with_index { |role, n| !role ? '' : "args[#{n}].extend(#{role.name})" }.join('; ') }
-          #{for_keywords.map { |n, r| !r ? '' : "kv[:#{n}].extend(#{r.name})" }.join('; ') }
+      method_definition = ['def execute_with_roles(*args, &block)']
+      method_definition << 'kv = args.last'
+      method_definition << for_args_definition(for_args, :extend)
+      method_definition << for_keywords_definition(for_keywords, :extend)
+      method_definition << 'ret = execute_without_roles(*args, &block)'
+      method_definition << for_args_definition(for_args, :unextend)
+      method_definition << for_keywords_definition(for_keywords, :unextend)
+      method_definition << 'ret'
+      method_definition << 'end'
 
-          ret = execute_without_roles(*args)
-
-          #{for_args.map.with_index { |role, n| !role ? '' : "args[#{n}].unextend(#{role.name})" }.join('; ') }
-          #{for_keywords.map { |n, r| !r ? '' : "kv[:#{n}].unextend(#{r.name})" }.join('; ') }
-
-          ret
-        end
-      EOM
-
-      @__override_now = true
-      alias_method_chain :execute, :roles
-      @__override_now = false
+      class_eval(method_definition.join("\n"))
     end
-    # rubocop:enable all
+
+    def for_args_definition(for_args, method_name)
+      defs = for_args.map.with_index do |role, n|
+        if role.nil?
+          ''
+        else
+          "args[#{n}].#{method_name}(#{role.name})"
+        end
+      end
+
+      defs.reject(&:empty?).join('; ')
+    end
+
+    def for_keywords_definition(for_keywords, method_name)
+      defs = for_keywords.map do |key, role|
+        if role.nil?
+          ''
+        else
+          "kv[:#{key}].#{method_name}(#{role.name})"
+        end
+      end
+
+      defs.reject(&:empty?).join('; ')
+    end
   end
 end
