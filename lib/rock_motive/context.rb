@@ -9,20 +9,16 @@ class RockMotive::Context
       new.execute(*args)
     end
 
-    def inherited(klass)
-      class << klass
-        def method_added(method_name)
-          return if method_name != :execute || @__override_now
-
-          for_args, for_keywords = *roles_by_execute_method
-          return if for_args.reject(&:nil?).empty? && for_keywords.empty?
-
-          override_execute_method(for_args, for_keywords)
-        end
-      end
-    end
-
     private
+
+    def method_added(method_name)
+      return if method_name != :execute || @__override_now
+
+      for_args, for_keywords = *roles_by_execute_method
+      return if for_args.reject(&:nil?).empty? && for_keywords.values.reject(&:nil?).empty?
+
+      override_execute_method(for_args, for_keywords)
+    end
 
     def execute_method
       instance_method(:execute)
@@ -74,6 +70,6 @@ class RockMotive::Context
       alias_method_chain :execute, :roles
       @__override_now = false
     end
+    # rubocop:enable all
   end
-  # rubocop:enable all
 end

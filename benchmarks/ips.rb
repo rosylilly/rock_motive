@@ -55,8 +55,16 @@ class DealContext < RockMotive::Context
   end
 end
 
+class DealWithoutRoleContext < RockMotive::Context
+  def execute(shopper_without_role, seller_without_role)
+    shopper_without_role.say
+    seller_without_role.say
+  end
+end
+
 Benchmark.ips do |x|
   x.report('PORO') { Deal.new.execute(PORO.new, PORO.new) }
   x.report('Delegator') { DealDelegator.new.execute(PORO.new, PORO.new) }
   x.report('RockMotive') { DealContext.new.execute(PORO.new, PORO.new) }
+  x.report('RockMotive wo/ role') { DealWithoutRoleContext.new.execute(PORO.new, PORO.new) }
 end
