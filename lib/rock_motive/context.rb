@@ -15,8 +15,10 @@ class RockMotive::Context
       end
     end
 
-    def scope(ns)
-      scopes.push(ns.to_s.classify)
+    def scope(*nss)
+      nss.each do |ns|
+        scopes.push(ns.to_s.classify)
+      end
     end
 
     def actors
