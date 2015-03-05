@@ -9,6 +9,27 @@ class RockMotive::Context
       new.execute(*args)
     end
 
+    def scopes
+      @scopes ||= self.name.to_s.split('::').inject(['']) do |scopes, ns|
+        scopes + ["#{scopes.last}::#{ns}"]
+      end
+    end
+
+    def scope(ns)
+      scopes.push(ns.to_s.classify)
+    end
+
+    def get_role_by_name(name)
+      role_name = name.to_s.classify
+
+      const = scopes.inject(nil) do |c, ns|
+        name = "#{ns}::#{role_name}"
+        (name.safe_constantize || "#{name}Role".safe_constantize) || c
+      end
+
+      (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
+    end
+
     private
 
     def method_added(method_name)
@@ -43,14 +64,6 @@ class RockMotive::Context
       end
 
       [for_args, for_keywords]
-    end
-
-    def get_role_by_name(name)
-      role_name = name.to_s.classify
-
-      const = role_name.safe_constantize || "#{role_name}Role".safe_constantize
-
-      (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
     end
 
     def override_execute_method(for_args, for_keywords)

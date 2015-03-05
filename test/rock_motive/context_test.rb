@@ -10,6 +10,13 @@ class RockMotive::ContextTest < ActiveSupport::TestCase
     assert { context_class_with_override_execute.execute }
   end
 
+  test '.scopes' do
+    context_class.scope 'hoge'
+
+    assert { RockMotive::Context.scopes.length == 3 }
+    assert { context_class.scopes.length == 2 }
+  end
+
   test '#execute with extend' do
     bird = Bird.new(name: 'hato')
 
@@ -34,6 +41,14 @@ class RockMotive::ContextTest < ActiveSupport::TestCase
     assert { bird.singleton_class.ancestors.exclude?(PigeonRole) }
   end
 
+  test '#execute with scope' do
+    bird = Bird.new(name: 'hato')
+
+    context_class_with_scope.execute(bird)
+
+    assert { bird.singleton_class.ancestors.exclude?(Fake::PigeonRole) }
+  end
+
   private
 
   def context_class
@@ -56,6 +71,16 @@ class RockMotive::ContextTest < ActiveSupport::TestCase
     @context_class_with_override_execute ||= Class.new(RockMotive::Context) do
       def self.execute
         true
+      end
+    end
+  end
+
+  def context_class_with_scope
+    @context_class_with_scope ||= Class.new(RockMotive::Context) do
+      scope 'fake'
+
+      def execute(pigeon)
+        pigeon.fly
       end
     end
   end
