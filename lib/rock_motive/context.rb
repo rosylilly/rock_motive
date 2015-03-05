@@ -25,15 +25,17 @@ class RockMotive::Context
       @actors ||= []
     end
 
-    def get_role_by_name(name)
+    def get_roles_by_name(name)
       role_name = name.to_s.classify
 
-      const = scopes.inject(nil) do |c, ns|
+      consts = scopes.map do |ns|
         name = "#{ns}::#{role_name}"
-        (name.safe_constantize || "#{name}Role".safe_constantize) || c
+        const = (name.safe_constantize || "#{name}Role".safe_constantize)
+
+        (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
       end
 
-      (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
+      consts.reject(&:nil?)
     end
 
     private
@@ -68,9 +70,9 @@ class RockMotive::Context
 
         case type
         when :req, :opt
-          for_args << get_role_by_name(name)
+          for_args << get_roles_by_name(name)
         when :keyreq, :key
-          for_keywords[name] = get_role_by_name(name)
+          for_keywords[name] = get_roles_by_name(name)
         end
       end
 
@@ -92,27 +94,27 @@ class RockMotive::Context
     end
 
     def for_args_definition(for_args, method_name)
-      defs = for_args.map.with_index do |role, n|
-        if role.nil?
+      defs = for_args.map.with_index do |roles, n|
+        if roles.empty?
           ''
         else
-          "args[#{n}].#{method_name}(#{role.name})"
+          roles.map {|role| "args[#{n}].#{method_name}(#{role.name})" }
         end
       end
 
-      defs.reject(&:empty?).join('; ')
+      defs.flatten.reject(&:empty?).join('; ')
     end
 
     def for_keywords_definition(for_keywords, method_name)
-      defs = for_keywords.map do |key, role|
-        if role.nil?
+      defs = for_keywords.map do |key, roles|
+        if roles.empty?
           ''
         else
-          "kv[:#{key}].#{method_name}(#{role.name})"
+          roles.map {|role| "kv[:#{key}].#{method_name}(#{role.name})" }
         end
       end
 
-      defs.reject(&:empty?).join('; ')
+      defs.flatten.reject(&:empty?).join('; ')
     end
   end
 end
