@@ -17,6 +17,11 @@ class RockMotive::ContextTest < ActiveSupport::TestCase
     assert { context_class.scopes.length == 2 }
   end
 
+  test '.actors' do
+    assert { context_class.actors == [] }
+    assert { context_class_with_role.actors == [:pigeon] }
+  end
+
   test '#execute with extend' do
     bird = Bird.new(name: 'hato')
 

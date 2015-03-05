@@ -19,6 +19,10 @@ class RockMotive::Context
       scopes.push(ns.to_s.classify)
     end
 
+    def actors
+      @actors ||= []
+    end
+
     def get_role_by_name(name)
       role_name = name.to_s.classify
 
@@ -50,11 +54,16 @@ class RockMotive::Context
     end
 
     def roles_by_execute_method
+      @actors = []
+
       for_args = []
       for_keywords = {}
 
       execute_method.parameters.each do |param|
         type, name = *param
+
+        @actors << name.to_s.to_sym
+
         case type
         when :req, :opt
           for_args << get_role_by_name(name)
