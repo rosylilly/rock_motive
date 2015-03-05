@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.authors     = ['Sho Kusano']
   s.email       = ['rosylilly@aduca.org']
   s.homepage    = 'https://github.com/rosylilly/rock_motive'
-  s.summary     = 'Inject DCI to Rails'
+  s.summary     = 'RockMotive provides DCI architecture to Rails'
   s.description = s.summary
   s.license     = 'MIT'
 
