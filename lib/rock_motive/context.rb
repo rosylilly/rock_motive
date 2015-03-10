@@ -1,7 +1,7 @@
 require 'uninclude'
 require 'active_support/inflector'
 require 'active_support/core_ext/module/aliasing'
-require 'rock_motive'
+require 'rock_motive/resolver'
 
 class RockMotive::Context
   class << self
@@ -23,19 +23,6 @@ class RockMotive::Context
 
     def actors
       @actors ||= []
-    end
-
-    def get_roles_by_name(name)
-      role_name = name.to_s.classify
-
-      consts = scopes.map do |ns|
-        name = "#{ns}::#{role_name}"
-        const = (name.safe_constantize || "#{name}Role".safe_constantize)
-
-        (const.is_a?(Module) && !const.is_a?(Class)) ? const : nil
-      end
-
-      consts.reject(&:nil?)
     end
 
     private
@@ -70,9 +57,9 @@ class RockMotive::Context
 
         case type
         when :req, :opt
-          for_args << get_roles_by_name(name)
+          for_args << ::RockMotive::Resolver.roles(name, scopes)
         when :keyreq, :key
-          for_keywords[name] = get_roles_by_name(name)
+          for_keywords[name] = ::RockMotive::Resolver.roles(name, scopes)
         end
       end
 
