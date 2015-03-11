@@ -10,9 +10,7 @@ class RockMotive::Context
     end
 
     def scopes
-      @scopes ||= name.to_s.split('::').inject(['']) do |scopes, ns|
-        scopes + ["#{scopes.last}::#{ns}"]
-      end
+      @scopes ||= ::RockMotive::Resolver.scopes(self)
     end
 
     def scope(*nss)

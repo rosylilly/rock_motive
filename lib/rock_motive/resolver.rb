@@ -14,5 +14,11 @@ module RockMotive::Resolver
 
       consts.reject(&:nil?)
     end
+
+    def scopes(mod)
+      mod.name.to_s.split('::').inject(['']) do |scopes, ns|
+        scopes + ["#{scopes.last}::#{ns}"]
+      end
+    end
   end
 end
