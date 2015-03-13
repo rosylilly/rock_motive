@@ -13,13 +13,13 @@ module RockMotive::Attribute
         class_eval(<<-EOC)
         if instance_methods.include?(:#{symbol}=)
           def #{symbol}_with_roles=(obj)
-            #{roles.map{|role| "obj.extend(#{role.name})" }.join('; ')}
+            #{roles.map { |role| "obj.extend(#{role.name})" }.join('; ')}
             __send__(:#{symbol}_without_roles=, obj)
           end
           alias_method_chain :#{symbol}=, :roles
         else
           def #{symbol}=(obj)
-            #{roles.map{|role| "obj.extend(#{role.name})" }.join('; ')}
+            #{roles.map { |role| "obj.extend(#{role.name})" }.join('; ')}
             @#{symbol} = obj
           end
         end

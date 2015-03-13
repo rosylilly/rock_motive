@@ -83,7 +83,7 @@ class RockMotive::Context
         if roles.empty?
           ''
         else
-          roles.map {|role| "args[#{n}].#{method_name}(#{role.name})" }
+          roles.map { |role| "args[#{n}].#{method_name}(#{role.name})" }
         end
       end
 
@@ -95,7 +95,7 @@ class RockMotive::Context
         if roles.empty?
           ''
         else
-          roles.map {|role| "kv[:#{key}].#{method_name}(#{role.name})" }
+          roles.map { |role| "kv[:#{key}].#{method_name}(#{role.name})" }
         end
       end
 
